@@ -1,0 +1,564 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// ============================================================================
+// PHASE 0: Foundation Models
+// ============================================================================
+
+// ============================================================================
+// PHASE 1: Auth, Tenant Model, and Admin Foundation
+// ============================================================================
+
+enum GlobalRole {
+  SUPERADMIN
+  USER
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum LoginEventStatus {
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String
+  globalRole    GlobalRole @default(USER)
+  isSuspended   Boolean  @default(false)
+  suspendedAt   DateTime?
+  suspendedReason String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspaces    WorkspaceUser[]
+  sessions      Session[]
+  loginEvents   LoginEvent[]
+  activityEvents UserActivityEvent[]
+  auditLogs     AuditLog[]
+  projects      Project[]
+  rateLimitEvents RateLimitEvent[]
+  userQuota     UserQuota?
+  abuseEvents   AbuseEvent[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    WorkspaceUser[]
+  projects Project[]
+  activityEvents UserActivityEvent[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceUser {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model LoginEvent {
+  id            String   @id @default(cuid())
+  userId        String?
+  emailAttempted String
+  ipAddress     String?
+  userAgent     String?
+  status        LoginEventStatus
+  createdAt     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("login_events")
+}
+
+model UserActivityEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String?
+  action      String   // e.g., "project_created", "source_added"
+  resource    String   // e.g., "project", "source"
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([createdAt])
+  @@map("user_activity_events")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  resource  String
+  changes   Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// PHASE 0: Foundation Models (continued)
+// ============================================================================
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum SourceType {
+  URL
+  FILE
+}
+
+enum SourceStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  name        String
+  slug        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sources   Source[]
+  context   ContextFile?
+  competitors Competitor[]
+  categoryCluster CategoryCluster?
+  opportunityZone OpportunityZone?
+  positioning PositioningStatement? @relation("ProjectPositioning")
+  scoreCard ScoreCard? @relation("ProjectScore")
+  strategicBrief StrategicBrief? @relation("ProjectBrief")
+  publicReport PublicReport? @relation("ProjectPublicReport")
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("projects")
+}
+
+model Source {
+  id        String   @id @default(cuid())
+  projectId String
+  type      SourceType
+  title     String
+  sourceUrl String?  // For URL sources
+  fileKey   String?  // For file sources (local path)
+  mimeType  String?  // For file sources
+  metadata  Json?    // Additional metadata (e.g., file size, page count)
+  status    SourceStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chunks  Chunk[]
+  crawlRun CrawlRun?
+
+  @@index([projectId])
+  @@index([status])
+  @@map("sources")
+}
+
+model Chunk {
+  id        String   @id @default(cuid())
+  sourceId  String
+  content   String
+  order     Int
+  createdAt DateTime @default(now())
+
+  source    Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  embedding Embedding?
+
+  @@map("chunks")
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  chunkId   String   @unique
+  vector    Bytes    // OpenAI embedding dimension (1536) stored as bytea in PostgreSQL
+  createdAt DateTime @default(now())
+
+  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@map("embeddings")
+}
+
+// ============================================================================
+// PHASE 3: Crawling, Parsing, Chunking, and Embeddings
+// ============================================================================
+
+enum CrawlStatus {
+  PENDING
+  CRAWLING
+  COMPLETED
+  FAILED
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model CrawlRun {
+  id        String   @id @default(cuid())
+  sourceId  String   @unique
+  status    CrawlStatus @default(PENDING)
+  url       String?
+  htmlContent String?
+  extractedText String?
+  errorMessage String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("crawl_runs")
+}
+
+model JobProgress {
+  id        String   @id @default(cuid())
+  sourceId  String
+  jobId     String   @unique  // BullMQ job ID
+  status    JobStatus @default(QUEUED)
+  progress  Int @default(0)  // 0-100
+  totalChunks Int @default(0)
+  processedChunks Int @default(0)
+  errorMessage String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceId])
+  @@index([status])
+  @@map("job_progress")
+}
+
+// ============================================================================
+// PHASE 4: Context Engine
+// ============================================================================
+
+enum ContextVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model ContextFile {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions ContextVersion[]
+
+  @@index([projectId])
+  @@map("context_files")
+}
+
+model ContextVersion {
+  id          String   @id @default(cuid())
+  contextFileId String
+  versionNumber Int
+  status      ContextVersionStatus @default(DRAFT)
+  contextData Json    // Full structured context as JSON
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contextFile ContextFile @relation(fields: [contextFileId], references: [id], onDelete: Cascade)
+
+  @@unique([contextFileId, versionNumber])
+  @@index([contextFileId])
+  @@index([status])
+  @@map("context_versions")
+}
+
+model ContextAtom {
+  id          String   @id @default(cuid())
+  contextVersionId String
+  fieldName   String   // e.g., "company_overview", "pain_points"
+  content     String
+  sourceChunkIds String[] // References to Chunk IDs for traceability
+  confidence  Float?   // 0-1 confidence score
+  createdAt   DateTime @default(now())
+
+  @@index([contextVersionId])
+  @@index([fieldName])
+  @@map("context_atoms")
+}
+
+// ============================================================================
+// PHASE 5: Competitor Intelligence Engine
+// ============================================================================
+
+enum CompetitorStatus {
+  DISCOVERED
+  ANALYZING
+  ANALYZED
+  FAILED
+}
+
+model Competitor {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  website   String?
+  status    CompetitorStatus @default(DISCOVERED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sources CompetitorSource[]
+  insight CompetitorInsight?
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@index([status])
+  @@map("competitors")
+}
+
+model CompetitorSource {
+  id          String   @id @default(cuid())
+  competitorId String
+  sourceUrl   String?
+  fileKey     String?
+  mimeType    String?
+  extractedText String?
+  createdAt   DateTime @default(now())
+
+  competitor Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@map("competitor_sources")
+}
+
+model CompetitorInsight {
+  id          String   @id @default(cuid())
+  competitorId String   @unique
+  insightData Json    // Structured competitor analysis
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  competitor Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@map("competitor_insights")
+}
+
+// ============================================================================
+// PHASE 6: Category Mapping and Opportunity Engine
+// ============================================================================
+
+model CategoryCluster {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  clusterData Json   // Segments, descriptions, player mappings
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("category_clusters")
+}
+
+model OpportunityZone {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  opportunityData Json // Saturated areas, whitespace, trends, overlaps
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("opportunity_zones")
+}
+
+// ============================================================================
+// PHASE 7: Positioning Engine, Score Engine, Strategic Brief Generator
+// ============================================================================
+
+model PositioningStatement {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  statementData Json  // positioning_statement, differentiation_strategy, messaging_framework, etc.
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation("ProjectPositioning", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("positioning_statements")
+}
+
+model ScoreCard {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  scoreData Json    // score, dimension_breakdown, justification, strengths, weaknesses, improvements
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation("ProjectScore", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("score_cards")
+}
+
+model StrategicBrief {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  briefData Json    // executive_summary, market_landscape, competitor_analysis, etc.
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation("ProjectBrief", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("strategic_briefs")
+}
+
+// ============================================================================
+// PHASE 8: Premium UI, Public Reports, and Exports
+// ============================================================================
+
+model PublicReport {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  slug        String   @unique
+  title       String
+  description String?
+  isPublished Boolean  @default(false)
+  theme       String   @default("light")
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation("ProjectPublicReport", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([isPublished])
+  @@map("public_reports")
+}
+
+// ============================================================================
+// PHASE 9: Owner-Admin Control Center
+// ============================================================================
+
+model RateLimitEvent {
+  id        String   @id @default(cuid())
+  ipAddress String?
+  userId    String?
+  endpoint  String
+  limit     Int
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@map("rate_limit_events")
+}
+
+model UserQuota {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  analysesUsed    Int      @default(0)
+  analysesLimit   Int      @default(50)
+  activeJobsCount Int      @default(0)
+  activeJobsLimit Int      @default(5)
+  lastResetAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_quotas")
+}
+
+model AbuseEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  ipAddress String?
+  eventType String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@map("abuse_events")
+}

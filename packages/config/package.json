@@ -1,0 +1,11 @@
+{
+  "name": "@stratix/config",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared configuration for STRATIX AI",
+  "main": "index.js",
+  "files": [
+    "tsconfig.base.json",
+    ".eslintrc.json"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@stratix/validation",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared validation schemas for STRATIX AI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@stratix/config": "*",
+    "typescript": "^5.3.3"
+  }
+}
