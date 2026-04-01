@@ -43,7 +43,7 @@ export const appRouter = router({
         });
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-        return { success: true } as const;
+        return { success: true, token: sessionToken } as const;
       }),
 
     login: publicProcedure
@@ -67,7 +67,7 @@ export const appRouter = router({
         });
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-        return { success: true } as const;
+        return { success: true, token: sessionToken } as const;
       }),
 
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -361,7 +361,8 @@ async function runCompetitorDiscovery(project: any, jobId: number) {
       project.name,
       context.industry || project.industry || "Technology",
       context.description || project.description || "",
-      project.region || "Global"
+      project.region || "Global",
+      project.url || ""
     );
 
     await db.updateAnalysisJob(jobId, { progress: 70, progressMessage: "Saving competitor data..." });
@@ -417,7 +418,8 @@ async function runTerritoryAnalysis(project: any, jobId: number) {
     const territoriesList = await analyzeTerritoriesAI(
       project.name,
       project.industry || "Technology",
-      competitorsData
+      competitorsData,
+      project.contextSummary || project.description || ""
     );
 
     await db.updateAnalysisJob(jobId, { progress: 70, progressMessage: "Saving territory data..." });
@@ -469,7 +471,8 @@ async function runBriefGeneration(project: any, jobId: number) {
       project.name,
       project.industry || "Technology",
       competitorsData,
-      territoriesData
+      territoriesData,
+      project.contextSummary || project.description || ""
     );
 
     await db.updateAnalysisJob(jobId, { progress: 70, progressMessage: "Saving brief..." });
@@ -515,7 +518,8 @@ async function runFullAnalysis(project: any, jobId: number) {
       project.name,
       context.industry || project.industry || "Technology",
       context.description || project.description || "",
-      project.region || "Global"
+      project.region || "Global",
+      project.url || ""
     );
 
     const competitorRecords = competitorsList.map((c: any) => ({
@@ -547,7 +551,8 @@ async function runFullAnalysis(project: any, jobId: number) {
     const territoriesList = await analyzeTerritoriesAI(
       project.name,
       context.industry || project.industry || "Technology",
-      competitorsData
+      competitorsData,
+      context.description || project.description || ""
     );
     await db.clearProjectTerritories(project.id);
     const territoryRecords = territoriesList.map((t: any) => ({
@@ -571,7 +576,8 @@ async function runFullAnalysis(project: any, jobId: number) {
       project.name,
       context.industry || project.industry || "Technology",
       competitorsData,
-      territoriesData
+      territoriesData,
+      context.description || project.description || ""
     );
 
     await db.upsertBrief(project.id, {

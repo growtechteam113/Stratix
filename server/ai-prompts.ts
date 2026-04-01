@@ -1,36 +1,91 @@
 // AI Prompt System for STRATIX AI
 // Each function returns structured prompts for the LLM
 
-export function contextExtractionPrompt(url: string, companyName: string) {
+export function contextExtractionPrompt(
+  url: string,
+  companyName: string,
+  websiteContent: string,
+  source: "website" | "search" | "none" = "none"
+) {
+  const domain = url.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/.*$/, "").trim();
+  const hasContent = websiteContent && websiteContent.length > 50;
+
+  let contextBlock: string;
+  if (source === "website" && hasContent) {
+    contextBlock = `LIVE WEBSITE CONTENT (scraped directly from ${url}):
+---
+${websiteContent}
+---
+
+CRITICAL RULES:
+1. Base your ENTIRE analysis on the scraped content above — nothing else.
+2. The domain is "${domain}" — do NOT confuse this with any other company that has a similar name or a different TLD (e.g. .com vs .co vs .io). These are different companies.
+3. Industry, description, competitors, and all fields must match what the website actually says.
+4. Do NOT override the scraped content with your training knowledge about similarly named companies.`;
+  } else if (source === "search" && hasContent) {
+    contextBlock = `WEB SEARCH DATA (retrieved from search engine results for ${domain}):
+---
+${websiteContent}
+---
+
+CRITICAL RULES:
+1. Base your ENTIRE analysis on the search data above — this is real, current information about ${domain}.
+2. "${domain}" is a SPECIFIC company — do NOT confuse it with any similarly named domain (e.g. if the domain is .co, do NOT use data from a .com with the same name). These are ENTIRELY DIFFERENT companies.
+3. Use the search snippets to determine the actual industry, description, and target market.
+4. Do NOT mix in your training knowledge about other companies with similar names.
+5. If the search data mentions a specific industry or location, use that exactly.`;
+  } else {
+    contextBlock = `WARNING: The website at ${url} could not be accessed and no web search data was found.
+
+ABSOLUTE RULES — VIOLATIONS WILL PRODUCE WRONG RESULTS:
+1. You MUST NOT use your training data to fill in details about this company.
+2. "${domain}" is a SPECIFIC company. If the TLD is .co, it is NOT the same as a .com with the same root name — they are completely different companies operating in different industries.
+3. Example: "owlytics.co" ≠ "owlytics.com". Do NOT use what you know about owlytics.com to answer about owlytics.co.
+4. Your ONLY allowed inference: look at the words in the domain name "${domain}" itself. What industry might those root words suggest?
+5. Set description to: "Website could not be accessed. Domain name suggests [inference from domain words only]."
+6. Set industry to whatever the domain words imply — nothing more.
+7. Do NOT name specific competitors. Use generic category placeholders only.`;
+  }
+
   return {
-    system: `You are STRATIX AI, a premium competitive intelligence engine. Extract and analyze the core business context from the given company information. Be precise, strategic, and evidence-based. Avoid generic statements.`,
-    user: `Analyze this company and extract key business context:
-Company: ${companyName}
-URL: ${url}
+    system: `You are STRATIX AI, a premium competitive intelligence engine. Your job is to extract business context STRICTLY from the data provided — either live website content or web search results. You MUST NOT use your training knowledge about any company. Different TLDs (.co vs .com vs .io vs .in) are ENTIRELY DIFFERENT companies even if the domain name looks similar — they can be in completely different industries. When you see a domain like "owlytics.co" you must ONLY look at the provided content, NEVER at what you know about "owlytics.com". Violating this rule produces completely wrong competitive analysis.`,
+    user: `Extract business context for this company:
+
+Company Name: ${companyName}
+Website URL: ${url}
+Domain: ${domain}
+
+${contextBlock}
 
 Return a JSON object with:
 {
-  "companyName": "string",
-  "industry": "string - specific industry/sector",
-  "description": "string - 2-3 sentence business description",
-  "targetMarket": "string - who they serve",
-  "valueProposition": "string - core value proposition",
-  "keyProducts": ["string array of main products/services"],
-  "businessModel": "string - how they make money",
+  "companyName": "string - exact company name as shown on their website or search results",
+  "industry": "string - specific industry/sector based on the provided data",
+  "description": "string - 2-3 sentence description based strictly on provided data",
+  "targetMarket": "string - who they serve, based on provided data",
+  "valueProposition": "string - core value proposition from provided data",
+  "keyProducts": ["string array of main products/services from provided data"],
+  "businessModel": "string - how they make money based on provided data",
   "estimatedSize": "string - startup/scaleup/enterprise",
-  "keyTerms": ["string array of industry-specific terms"]
+  "keyTerms": ["string array of industry-specific terms from provided data"]
 }`
   };
 }
 
-export function competitorDiscoveryPrompt(companyName: string, industry: string, description: string, region: string) {
+export function competitorDiscoveryPrompt(companyName: string, industry: string, description: string, region: string, url: string = "") {
+  const domain = url ? url.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/.*$/, "").trim() : "";
   return {
-    system: `You are STRATIX AI, a premium competitive intelligence engine. Discover the most relevant competitors for the given company. Focus on direct competitors, emerging threats, and adjacent players. Be specific and strategic.`,
+    system: `You are STRATIX AI, a premium competitive intelligence engine. Discover the most relevant competitors for the given company. Focus on direct competitors, emerging threats, and adjacent players. Be specific and strategic. CRITICAL: Only suggest competitors that are genuinely in the same industry as the description states. Do NOT confuse companies with similar names in different sectors — different TLDs (e.g. .co vs .com) are entirely different companies.`,
     user: `Discover competitors for this company:
-Company: ${companyName}
+Company: ${companyName}${domain ? `\nDomain: ${domain}` : ""}
 Industry: ${industry}
 Description: ${description}
 Region: ${region}
+
+CRITICAL RULES:
+1. The description above is the GROUND TRUTH about what this company does. Use it to anchor all competitor selection.
+2. Only suggest competitors operating in the "${industry}" space as described above.
+3. Do NOT use your training data about companies with similar names — focus only on the industry and description provided.${domain ? `\n4. "${domain}" is a SPECIFIC domain — if it ends in .co, do NOT confuse it with a .com company of the same name.` : ""}
 
 Return a JSON array of 5-8 competitors, each with:
 {
@@ -78,13 +133,15 @@ Return a JSON object with:
   };
 }
 
-export function territoryAnalysisPrompt(companyName: string, industry: string, competitorsData: string) {
+export function territoryAnalysisPrompt(companyName: string, industry: string, competitorsData: string, description: string = "") {
   return {
-    system: `You are STRATIX AI. Analyze the competitive landscape and map positioning territories. Each territory represents a strategic position in the market. Be specific about which positions are owned, unoccupied, contested, or indefensible.`,
+    system: `You are STRATIX AI. Analyze the competitive landscape and map positioning territories. Each territory represents a strategic position in the market. Be specific about which positions are owned, unoccupied, contested, or indefensible. CRITICAL: Base your analysis ONLY on the company description and industry provided — do NOT layer in knowledge about similarly named companies from your training data.`,
     user: `Map positioning territories for:
 Company: ${companyName}
-Industry: ${industry}
+Industry: ${industry}${description ? `\nDescription: ${description}` : ""}
 Competitors: ${competitorsData}
+
+CRITICAL: The industry and description above define what this company ACTUALLY does. All territories must be grounded in the "${industry}" space described above. Do NOT drift into unrelated industries.
 
 Return a JSON object with territories in 4 categories:
 {
@@ -105,14 +162,19 @@ Generate 3-5 territories per category (12-20 total). Be specific to the actual m
   };
 }
 
-export function strategicBriefPrompt(companyName: string, industry: string, competitorsData: string, territoriesData: string) {
+export function strategicBriefPrompt(companyName: string, industry: string, competitorsData: string, territoriesData: string, description: string = "") {
   return {
-    system: `You are STRATIX AI. Generate a premium strategic brief that synthesizes all competitive intelligence into actionable strategic recommendations. Write in a sharp, executive style. No fluff.`,
+    system: `You are STRATIX AI. Generate a premium strategic brief that synthesizes all competitive intelligence into actionable strategic recommendations. Write in a sharp, executive style. No fluff. CRITICAL: Base your brief STRICTLY on the company description and industry provided. Do NOT mix in knowledge about similarly named companies from your training data.`,
     user: `Generate a strategic brief for:
 Company: ${companyName}
-Industry: ${industry}
+Industry: ${industry}${description ? `\nWhat this company does: ${description}` : ""}
 Competitors: ${competitorsData}
 Territories: ${territoriesData}
+
+CRITICAL RULES:
+1. The "What this company does" field above is the GROUND TRUTH. Every sentence of your brief must be consistent with it.
+2. Do NOT introduce industries, products, or markets that aren't mentioned in the description or competitor data.
+3. If "What this company does" says market research / competitive intelligence, every recommendation, risk, and opportunity must relate to that — not to healthcare, not to unrelated analytics.
 
 Return a JSON object:
 {

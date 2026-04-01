@@ -48,7 +48,7 @@ import {
   Info,
   X,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 
 /* ─── Animation Variants ─── */
@@ -490,7 +490,7 @@ export default function ProjectDetail() {
   const competitorsQuery = trpc.competitors.list.useQuery({ projectId }, { enabled: !!user && !!projectId });
   const territoriesQuery = trpc.territories.list.useQuery({ projectId }, { enabled: !!user && !!projectId });
   const briefQuery = trpc.brief.get.useQuery({ projectId }, { enabled: !!user && !!projectId });
-  const jobsQuery = trpc.analysis.jobs.useQuery({ projectId }, { enabled: !!user && !!projectId, refetchInterval: 5000 });
+  const jobsQuery = trpc.analysis.jobs.useQuery({ projectId }, { enabled: !!user && !!projectId, refetchInterval: 3000 });
 
   /* ─── Mutations ─── */
   const discoverMutation = trpc.analysis.discoverCompetitors.useMutation({
@@ -523,6 +523,22 @@ export default function ProjectDetail() {
   const jobs = jobsQuery.data ?? [];
   const latestJob = jobs[0];
   const isAnalyzing = latestJob?.status === "running" || latestJob?.status === "pending";
+
+  /* ─── Auto-refresh data when analysis job completes ─── */
+  const prevJobStatusRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const status = latestJob?.status;
+    if (
+      (prevJobStatusRef.current === "running" || prevJobStatusRef.current === "pending") &&
+      status === "completed"
+    ) {
+      competitorsQuery.refetch();
+      territoriesQuery.refetch();
+      briefQuery.refetch();
+      projectQuery.refetch();
+    }
+    prevJobStatusRef.current = status;
+  }, [latestJob?.status]);
 
   /* Group competitors by threat level */
   const threatGroups = useMemo(() => {

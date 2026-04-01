@@ -20,7 +20,9 @@ export function useAuth(options?: UseAuthOptions) {
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
+      localStorage.removeItem("stratix-session");
       utils.auth.me.setData(undefined, null);
+      window.location.href = "/";
     },
   });
 

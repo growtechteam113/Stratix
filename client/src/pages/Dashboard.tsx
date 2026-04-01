@@ -236,9 +236,11 @@ export default function Dashboard() {
               e.preventDefault();
               if (!newProject.name || !newProject.url) return;
               setCreating(true);
+              const raw = newProject.url.trim();
+              const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
               createMutation.mutate({
                 name: newProject.name,
-                url: newProject.url,
+                url,
                 region: newProject.region,
                 description: newProject.description || undefined,
               });
@@ -259,8 +261,8 @@ export default function Dashboard() {
               <Label htmlFor="url">Company Website</Label>
               <Input
                 id="url"
-                type="url"
-                placeholder="https://acme.com"
+                type="text"
+                placeholder="acme.com or www.acme.com"
                 value={newProject.url}
                 onChange={(e) => setNewProject(p => ({ ...p, url: e.target.value }))}
                 required

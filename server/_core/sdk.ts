@@ -250,8 +250,15 @@ class SDKServer {
   }
 
   async authenticateRequest(req: Request): Promise<User> {
-    const cookies = this.parseCookies(req.headers.cookie);
-    const sessionCookie = cookies.get(COOKIE_NAME);
+    // Prefer Authorization header (works cross-origin), fall back to cookie
+    let sessionCookie: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      sessionCookie = authHeader.slice(7);
+    } else {
+      const cookies = this.parseCookies(req.headers.cookie);
+      sessionCookie = cookies.get(COOKIE_NAME);
+    }
     const session = await this.verifySession(sessionCookie);
 
     if (!session) {
