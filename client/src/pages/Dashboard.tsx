@@ -97,7 +97,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setLocation("/")}>
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
@@ -117,7 +117,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.06 } } }}>
           {/* Header */}
           <motion.div variants={fadeUp} className="flex items-center justify-between mb-8">

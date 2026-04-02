@@ -1,0 +1,259 @@
+/* ═══════════════════════════════════════════════════════════
+   STRATIX AI — Mobile Responsive Overrides
+   All inline-style layouts use classNames that are targeted here
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Global scroll & overflow fix ─── */
+html,
+body {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ─── NAV ─── */
+.s-nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── SECTION WRAPPER ─── */
+.s-section {
+  padding: 96px 32px;
+}
+.s-section-sm {
+  padding: 96px 32px;
+  background: linear-gradient(180deg, #fafafa 0%, white 100%);
+}
+
+/* ─── HERO ─── */
+.s-hero-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 32px;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+.s-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.s-hero-right {
+  position: relative;
+}
+
+/* ─── HERO MINI STATS ─── */
+.s-hero-mini-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  row-gap: 16px;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ─── TERRITORY SPLIT ─── */
+.s-territory-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  padding: 96px 32px;
+}
+
+/* ─── CTA BADGES ─── */
+.s-cta-badges {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 44px;
+  flex-wrap: wrap;
+}
+
+/* ─── LOGIN SPLIT ─── */
+.s-login-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1020px;
+  width: 100%;
+  gap: 32px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ─── FOOTER ─── */
+.s-footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ─── PROJECT DETAIL ─── */
+.s-pd-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.s-pd-tabs {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.s-pd-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════
+   TABLET  ≤ 900px
+   ══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .s-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .s-hero-right {
+    display: none; /* hide floating card on tablet/mobile — content is enough */
+  }
+  .s-territory-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 64px 24px;
+  }
+  .s-section,
+  .s-section-sm {
+    padding: 64px 24px;
+  }
+  .s-hero-content {
+    padding: 48px 24px;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE  ≤ 640px
+   ══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Nav */
+  .s-nav-inner {
+    padding: 0 16px;
+  }
+
+  /* Hero */
+  .s-hero-content {
+    padding: 32px 16px 48px;
+  }
+  .s-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  /* Hero mini stats */
+  .s-hero-mini-stats {
+    gap: 20px;
+    row-gap: 14px;
+    margin-top: 28px;
+    padding-top: 24px;
+  }
+
+  /* Sections */
+  .s-section,
+  .s-section-sm {
+    padding: 52px 16px;
+  }
+
+  /* Territory */
+  .s-territory-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 52px 16px;
+  }
+
+  /* CTA badges — stack them */
+  .s-cta-badges {
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  /* Footer */
+  .s-footer-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  /* Login page */
+  .s-login-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    gap: 0;
+  }
+  .s-login-left,
+  .login-left-panel {
+    display: none !important;
+  }
+
+  /* Project detail header wrap */
+  .s-pd-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+  .s-pd-section-header {
+    gap: 10px;
+  }
+  .s-pd-tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dialogs - ensure they fit on small screens */
+  [role="dialog"] [data-radix-dialog-content] {
+    margin: 12px;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   EXTRA SMALL  ≤ 400px
+   ══════════════════════════════════════════════ */
+@media (max-width: 400px) {
+  .s-hero-content {
+    padding: 24px 14px 40px;
+  }
+  .s-section,
+  .s-section-sm {
+    padding: 40px 14px;
+  }
+  .s-territory-grid {
+    padding: 40px 14px;
+  }
+  .s-hero-mini-stats {
+    gap: 16px;
+  }
+  /* Login panel padding reduction */
+  .s-login-grid > *:last-child {
+    padding: 28px 20px !important;
+    border-radius: 20px !important;
+  }
+}

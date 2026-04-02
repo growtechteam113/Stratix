@@ -194,7 +194,7 @@ export default function Login() {
         </button>
       </motion.div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", maxWidth: 1020, width: "100%", gap: 32, position: "relative", zIndex: 10 }}>
+      <div className="s-login-grid">
 
         {/* ── Left panel: brand + features ── */}
         <motion.div
@@ -451,14 +451,11 @@ export default function Login() {
         </motion.div>
       </div>
 
-      {/* Responsive: hide left panel on small screens */}
+      {/* Responsive: hide left panel on small screens (also handled in mobile.css at 640px) */}
       <style>{`
         @media (max-width: 700px) {
           .login-left-panel { display: none !important; }
-          div[style*="grid-template-columns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-            max-width: 460px !important;
-          }
+          .s-login-grid { grid-template-columns: 1fr !important; max-width: 460px !important; }
         }
       `}</style>
     </div>

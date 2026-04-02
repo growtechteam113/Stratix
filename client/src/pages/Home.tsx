@@ -203,7 +203,7 @@ export default function Home() {
           height: 68,
         }}
       >
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="s-nav-inner">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(99,102,241,0.35)" }}>
               <Sparkles style={{ width: 18, height: 18, color: "white" }} />
@@ -218,8 +218,8 @@ export default function Home() {
               </Button>
             ) : (
               <>
-                <button onClick={() => { window.location.href = getLoginUrl(); }} style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "#475569", borderRadius: 8 }}>Sign in</button>
-                <Button onClick={handleGetStarted} style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", borderRadius: 10, height: 40, padding: "0 20px", fontWeight: 600, boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}>
+                <button onClick={() => { window.location.href = getLoginUrl(); }} style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 12px", fontSize: 14, fontWeight: 500, color: "#475569", borderRadius: 8, whiteSpace: "nowrap" }} className="hidden sm:block">Sign in</button>
+                <Button onClick={handleGetStarted} style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", borderRadius: 10, height: 40, padding: "0 16px", fontWeight: 600, boxShadow: "0 4px 12px rgba(99,102,241,0.3)", whiteSpace: "nowrap" }}>
                   Get Started <ArrowRight style={{ width: 15, height: 15, marginLeft: 6 }} />
                 </Button>
               </>
@@ -282,8 +282,8 @@ export default function Home() {
           />
         ))}
 
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px", position: "relative", zIndex: 10, width: "100%" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+        <div className="s-hero-content">
+          <div className="s-hero-grid">
             {/* Left */}
             <motion.div initial="hidden" animate="visible" variants={stagger}>
               <motion.div variants={fadeUp} custom={0} style={{ marginBottom: 24 }}>
@@ -313,7 +313,7 @@ export default function Home() {
                 </button>
               </motion.div>
 
-              <motion.div variants={fadeUp} custom={4} style={{ display: "flex", gap: 28, marginTop: 40, paddingTop: 32, borderTop: "1px solid #f1f5f9" }}>
+              <motion.div variants={fadeUp} custom={4} className="s-hero-mini-stats">
                 {[{ value: "10K+", label: "Competitors Mapped" }, { value: "97%", label: "Accuracy Rate" }, { value: "8 min", label: "Avg Brief Time" }].map((s) => (
                   <div key={s.label}>
                     <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.03em" }}>{s.value}</div>
@@ -324,7 +324,7 @@ export default function Home() {
             </motion.div>
 
             {/* Right – floating dashboard preview */}
-            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }} style={{ position: "relative" }}>
+            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }} className="s-hero-right" style={{ position: "relative" }}>
               <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} style={{ ...GLASS_CARD, padding: 24 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -383,7 +383,7 @@ export default function Home() {
       </div>
 
       {/* ═══ STATS ═══ */}
-      <section style={{ padding: "96px 32px", background: "white" }}>
+      <section className="s-section" style={{ background: "white" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger} style={{ textAlign: "center", marginBottom: 64 }}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Trusted by Strategists</motion.p>
@@ -410,7 +410,7 @@ export default function Home() {
       </section>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <section id="how-it-works" style={{ padding: "96px 32px", background: "linear-gradient(180deg, #fafafa 0%, white 100%)" }}>
+      <section id="how-it-works" className="s-section" style={{ background: "linear-gradient(180deg, #fafafa 0%, white 100%)" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger} style={{ textAlign: "center", marginBottom: 80 }}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>How It Works</motion.p>
@@ -443,7 +443,7 @@ export default function Home() {
       </section>
 
       {/* ═══ FEATURES ═══ */}
-      <section style={{ padding: "96px 32px", background: "white" }}>
+      <section className="s-section" style={{ background: "white" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger} style={{ textAlign: "center", marginBottom: 72 }}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Capabilities</motion.p>
@@ -452,7 +452,7 @@ export default function Home() {
             </motion.h2>
           </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(340px, 100%), 1fr))", gap: 20 }}>
             {features.map((f, i) => (
               <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-40px" }} variants={fadeUp} custom={i}
                 whileHover={{ y: -4, boxShadow: `0 16px 48px ${f.color}18` }}
@@ -471,8 +471,8 @@ export default function Home() {
       </section>
 
       {/* ═══ TERRITORY SHOWCASE ═══ */}
-      <section style={{ padding: "96px 32px", background: "linear-gradient(135deg, #fafafa 0%, #f5f3ff 50%, #faf5ff 100%)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+      <section style={{ background: "linear-gradient(135deg, #fafafa 0%, #f5f3ff 50%, #faf5ff 100%)" }}>
+        <div className="s-territory-grid">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Territory Mapping</motion.p>
             <motion.h2 variants={fadeUp} custom={1} style={{ fontSize: "clamp(28px, 3.5vw, 46px)", fontWeight: 900, color: "#0f172a", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 }}>
@@ -530,7 +530,7 @@ export default function Home() {
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <section style={{ padding: "96px 32px", background: "white" }}>
+      <section className="s-section" style={{ background: "white" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger} style={{ textAlign: "center", marginBottom: 64 }}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Testimonials</motion.p>
@@ -539,7 +539,7 @@ export default function Home() {
             </motion.h2>
           </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))", gap: 24 }}>
             {testimonials.map((t, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-40px" }} variants={fadeUp} custom={i}
                 whileHover={{ y: -4 }}
@@ -566,7 +566,7 @@ export default function Home() {
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section style={{ padding: "96px 32px", background: "#fafafa" }}>
+      <section className="s-section" style={{ background: "#fafafa" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger} style={{ textAlign: "center", marginBottom: 56 }}>
             <motion.p variants={fadeUp} custom={0} style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>FAQ</motion.p>
@@ -581,7 +581,7 @@ export default function Home() {
       </section>
 
       {/* ═══ FINAL CTA ═══ */}
-      <section style={{ padding: "120px 32px", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
+      <section className="s-section" style={{ position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
         <div style={{ position: "absolute", top: "20%", left: "10%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
 
@@ -609,7 +609,7 @@ export default function Home() {
               </button>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={4} style={{ display: "flex", justifyContent: "center", gap: 32, marginTop: 44 }}>
+            <motion.div variants={fadeUp} custom={4} className="s-cta-badges">
               {[
                 { icon: CheckCircle, text: "No credit card" },
                 { icon: Lock, text: "Private by default" },
@@ -627,7 +627,7 @@ export default function Home() {
 
       {/* ═══ FOOTER ═══ */}
       <footer style={{ background: "#0a0f1e", padding: "40px 32px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div className="s-footer-inner">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Sparkles style={{ width: 14, height: 14, color: "white" }} />

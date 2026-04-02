@@ -92,22 +92,22 @@ function SectionHeader({ number, title, subtitle, icon: Icon, children }: {
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-6">
-      <div className="flex items-start gap-4">
-        <div className="flex items-center gap-2 mt-1">
+    <div className="s-pd-section-header">
+      <div className="flex items-start gap-4 flex-1 min-w-0">
+        <div className="flex items-center gap-2 mt-1 shrink-0">
           <span className="font-mono text-xs font-medium text-muted-foreground/60 tracking-wider">{number}</span>
           <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
             <Icon className="w-4 h-4 text-primary" />
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
             {title}
           </h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>
       </div>
-      {children}
+      {children && <div className="shrink-0">{children}</div>}
     </div>
   );
 }
@@ -605,15 +605,15 @@ export default function ProjectDetail() {
     <div className="min-h-screen bg-background">
       {/* ═══ TOP BAR (THEO-inspired) ═══ */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-xl">
-        <div className="max-w-[1200px] mx-auto px-6 sm:px-10 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setLocation("/dashboard")} className="text-muted-foreground hover:text-foreground transition-colors">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-10 h-14 flex items-center justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <button onClick={() => setLocation("/dashboard")} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="w-px h-5 bg-border" />
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{project.name}</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">
+            <div className="w-px h-5 bg-border shrink-0" />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-semibold truncate" style={{ fontFamily: "var(--font-display)" }}>{project.name}</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline whitespace-nowrap">
                 · Competitive Positioning Intelligence
               </span>
             </div>
@@ -652,7 +652,7 @@ export default function ProjectDetail() {
       {/* ═══ PROGRESS BAR ═══ */}
       {isAnalyzing && latestJob && (
         <div className="border-b border-primary/10 bg-primary/3">
-          <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-3">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-10 py-3">
             <div className="flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
               <div className="flex-1">
@@ -668,7 +668,7 @@ export default function ProjectDetail() {
       )}
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main className="max-w-[1200px] mx-auto px-6 sm:px-10 py-10">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-10 py-8 sm:py-10">
 
         {/* ═══ HERO SECTION ═══ */}
         <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp} className="mb-12">
@@ -823,7 +823,8 @@ export default function ProjectDetail() {
           ) : (
             <div>
               {/* Territory Tabs (THEO-inspired) */}
-              <div className="flex border-b-2 border-border/30 mb-0">
+              <div className="s-pd-tabs">
+              <div className="flex border-b-2 border-border/30 mb-0 min-w-max sm:min-w-0">
                 {(["owned", "unoccupied", "contested", "indefensible"] as const).map((type) => {
                   const config = TERRITORY_CONFIG[type];
                   const colors = TERRITORY_COLORS[type];
@@ -847,6 +848,7 @@ export default function ProjectDetail() {
                     </button>
                   );
                 })}
+              </div>
               </div>
 
               {/* Territory Panel */}

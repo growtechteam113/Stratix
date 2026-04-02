@@ -121,16 +121,16 @@ export default function PublicReport() {
     <div className="min-h-screen bg-background">
       {/* ═══ TOP BAR ═══ */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-xl">
-        <div className="max-w-[900px] mx-auto px-6 sm:px-10 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+        <div className="max-w-[900px] mx-auto px-4 sm:px-10 h-14 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
               <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
             <span className="text-sm font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
               STRATIX AI
             </span>
-            <div className="w-px h-4 bg-border" />
-            <span className="text-xs text-muted-foreground">Competitive Positioning Intelligence</span>
+            <div className="w-px h-4 bg-border hidden sm:block" />
+            <span className="text-xs text-muted-foreground hidden sm:block">Competitive Positioning Intelligence</span>
           </div>
           <Badge variant="secondary" className="gap-1.5 text-xs">
             <FileText className="w-3 h-3" />
@@ -139,7 +139,7 @@ export default function PublicReport() {
         </div>
       </header>
 
-      <main className="max-w-[900px] mx-auto px-6 sm:px-10 py-10">
+      <main className="max-w-[900px] mx-auto px-4 sm:px-10 py-8 sm:py-10">
 
         {/* ═══ NORTH STAR — SCORE ═══ */}
         <motion.section custom={0} initial="hidden" animate="visible" variants={fadeUp} className="mb-12">
